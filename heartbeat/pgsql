@@ -839,10 +839,10 @@ pgsql_real_monitor() {
     if ocf_is_true ${OCF_RESKEY_check_wal_receiver}; then
         pgsql_wal_receiver_status
     fi
-
+    RETRY=1
     if is_replication; then
         #Check replication state
-        output=`su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
+        output=`exec_with_retry 0 su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
                 $OCF_RESKEY_psql $psql_options -U $OCF_RESKEY_pgdba \
                 -Atc \"${CHECK_MS_SQL}\""`
         rc=$?
@@ -856,6 +856,8 @@ pgsql_real_monitor() {
                 if [ "$OCF_RESKEY_monitor_sql" = "$OCF_RESKEY_monitor_sql_default" ]; then
                     return $OCF_RUNNING_MASTER
                 fi
+                # set retry to 0, because we are running as master, and will run the second check
+                RETRY=0
                 ;;
 
             t)  ocf_log debug "PostgreSQL is running as a hot standby."
@@ -867,8 +869,8 @@ pgsql_real_monitor() {
     fi
 
     OCF_RESKEY_monitor_sql=`escape_string "$OCF_RESKEY_monitor_sql"`
-    runasowner -q $loglevel "$OCF_RESKEY_psql $psql_options \
-                  -c '$OCF_RESKEY_monitor_sql'"
+    exec_with_retry $RETRY su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
+                  $OCF_RESKEY_psql $psql_options -c '$OCF_RESKEY_monitor_sql'"
     rc=$?
     if [ $rc -ne  0 ]; then
         report_psql_error $rc $loglevel "PostgreSQL $OCF_RESKEY_pgdb isn't running."
