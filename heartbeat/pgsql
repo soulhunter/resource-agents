@@ -839,7 +839,7 @@ pgsql_real_monitor() {
     if ocf_is_true ${OCF_RESKEY_check_wal_receiver}; then
         pgsql_wal_receiver_status
     fi
-    RETRY=1
+    RETRY=5
     if is_replication; then
         #Check replication state
         output=`exec_with_retry 0 su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
