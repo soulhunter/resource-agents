@@ -842,9 +842,9 @@ pgsql_real_monitor() {
     RETRY=5
     if is_replication; then
         #Check replication state
-        output=`exec_with_retry 0 su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
+        output=`exec_with_retry 0 su $OCF_RESKEY_pgdba -c "\"cd $OCF_RESKEY_pgdata; \
                 $OCF_RESKEY_psql $psql_options -U $OCF_RESKEY_pgdba \
-                -Atc \"${CHECK_MS_SQL}\""`
+                -Atc '${CHECK_MS_SQL}'\""`
         rc=$?
         if [ $rc -ne  0 ]; then
             report_psql_error $rc $loglevel "Can't get PostgreSQL recovery status."
@@ -869,8 +869,8 @@ pgsql_real_monitor() {
     fi
 
     OCF_RESKEY_monitor_sql=`escape_string "$OCF_RESKEY_monitor_sql"`
-    exec_with_retry $RETRY su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
-                  $OCF_RESKEY_psql $psql_options -c '$OCF_RESKEY_monitor_sql'"
+    exec_with_retry $RETRY su $OCF_RESKEY_pgdba -c "\"cd $OCF_RESKEY_pgdata; \
+                  $OCF_RESKEY_psql $psql_options -c '$OCF_RESKEY_monitor_sql' \""
     rc=$?
     if [ $rc -ne  0 ]; then
         report_psql_error $rc $loglevel "PostgreSQL $OCF_RESKEY_pgdb isn't running."
