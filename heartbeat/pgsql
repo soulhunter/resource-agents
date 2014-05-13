@@ -1529,7 +1529,7 @@ exec_with_retry() {
     shift
 
     while [ $count -gt 0 ]; do
-        output=`$*`
+        output=`eval "$*"`
         rc=$?
         if [ $rc -ne 0 ]; then
             ocf_log warn "Retrying(remain $count). \"$*\" failed. rc=$rc. stdout=\"$output\"."
