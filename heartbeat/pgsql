@@ -1034,9 +1034,9 @@ control_slave_status() {
     local node_name
     local number_of_nodes
 
-    all_data_status=`su $OCF_RESKEY_pgdba -c "cd $OCF_RESKEY_pgdata; \
+    all_data_status=`exec_with_retry 0 su $OCF_RESKEY_pgdba -c "\"cd $OCF_RESKEY_pgdata; \
                      $OCF_RESKEY_psql $psql_options -U $OCF_RESKEY_pgdba \
-                     -Atc \"${CHECK_REPLICATION_STATE_SQL}\""`
+                     -Atc '${CHECK_REPLICATION_STATE_SQL}'\""`
     rc=$?
     if [ $rc -eq 0 ]; then
         if [ -n "$all_data_status" ]; then
